@@ -7,6 +7,7 @@ a "conversations" key.
 
 import json
 import argparse
+from uuid import uuid4
 
 
 def main():
@@ -29,7 +30,7 @@ def main():
     ) as outfile:
         for line in infile:
             conversation = json.loads(line)
-            obj = {"conversation": conversation}
+            obj = {"conversations": conversation, "id": str(uuid4())[:8]}
             outfile.write(json.dumps(obj, ensure_ascii=False) + "\n")
 
 
