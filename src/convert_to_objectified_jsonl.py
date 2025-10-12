@@ -30,7 +30,7 @@ def main():
     ) as outfile:
         for line in infile:
             conversation = json.loads(line)
-            obj = {"conversations": conversation, "id": str(uuid4())[:8]}
+            obj = {"conversations": conversation}
             outfile.write(json.dumps(obj, ensure_ascii=False) + "\n")
 
 
