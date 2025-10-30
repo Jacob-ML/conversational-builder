@@ -7,6 +7,7 @@ these would interface with actual APIs or services to perform their tasks.
 import datetime
 import os
 import random
+import time
 from typing import Union
 import requests
 
@@ -312,9 +313,12 @@ def get_tool_response(tool_name: str, tool_args: dict) -> dict:
 
     if tool_name in POTENTIAL_TOOLS["web"]["names"]:
         query = tool_args.get("query", "")
+        print("SEARCHING", query)
 
         try:
-            input("RUN WEB SEARCH? " + query + "\nPress Enter to continue...")
+            # input("RUN WEB SEARCH? " + query + "\nPress Enter to continue...")
+            time.sleep(20)  # delay to make rate limits less likely to be hit
+            pass
         except (KeyboardInterrupt, EOFError):
             print("Cancelled.")
 
@@ -323,20 +327,30 @@ def get_tool_response(tool_name: str, tool_args: dict) -> dict:
                 "details": "cannot search right now",
             }
 
-        return requests.post(
+        resp = requests.post(
             "https://ollama.com/api/web_search",
             headers={
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {OLLAMA_API_KEY}",
             },
             json={"query": query, "max_results": random.randint(1, 4)},
-        ).json()
+        )
+
+        if resp.status_code != 200:
+            return {
+                "error": "search failed",
+                "details": f"status code {resp.status_code}",
+            }
+
+        return resp.json()
 
     elif tool_name in POTENTIAL_TOOLS["web_fetch"]["names"]:
         url = tool_args.get("url") or tool_args.get("link", "")
+        print("FETCHING", url)
 
         try:
-            input("RUN WEB FETCH? " + url + "\nPress Enter to continue...")
+            # input("RUN WEB FETCH? " + url + "\nPress Enter to continue...")
+            pass
         except (KeyboardInterrupt, EOFError):
             print("Cancelled.")
 
@@ -356,6 +370,7 @@ def get_tool_response(tool_name: str, tool_args: dict) -> dict:
 
     elif tool_name in POTENTIAL_TOOLS["weather"]["names"]:
         location = tool_args.get("location", "")
+        print("GETTING WEATHER", location)
 
         return mock_weather_tool(location)
 
@@ -363,11 +378,41 @@ def get_tool_response(tool_name: str, tool_args: dict) -> dict:
         code = tool_args.get("code") or tool_args.get("expression", "")
 
         try:
-            input(
-                "RUN THIS EXPRESSION? "
-                + code
-                + "\nPress Enter to continue, CTRL+C to cancel..."
-            )
+            # input(
+            #     "RUN THIS EXPRESSION? "
+            #     + code
+            #     + "\nPress Enter to continue, CTRL+C to cancel..."
+            # )
+
+            forbidden_keywords = [
+                "import",
+                "__",
+                "os.",
+                "sys.",
+                "requests",
+                "open(",
+                "eval(",
+                "exec(",
+                "getattr",
+                "setattr",
+                "delattr",
+                "globals()",
+                "locals()",
+                "compile(",
+                "pickle",
+                "subprocess",
+                "shlex",
+                "socket",
+                "thread",
+                "multiprocessing",
+                "ctypes",
+            ]
+
+            if any(keyword in code for keyword in forbidden_keywords):
+                print("Execution refused: forbidden keywords detected.", code)
+                raise KeyboardInterrupt()
+
+            print("RUNNING", code)
         except (KeyboardInterrupt, EOFError):
             print("Cancelled.")
 
@@ -382,7 +427,12 @@ def get_tool_response(tool_name: str, tool_args: dict) -> dict:
             for part in parts[:-1]:
                 exec(part.strip())
 
-            return eval(parts[-1].strip())
+            last_part: str = parts[-1].strip()
+
+            if "print(" in last_part:
+                last_part = last_part.lstrip("print(").rstrip(";").rstrip(")")
+
+            return eval(last_part)
 
         try:
             result = _run(code)
