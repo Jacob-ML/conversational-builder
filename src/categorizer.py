@@ -28,11 +28,11 @@ TOPICS = [
     "translation",
     "casual conversation",
     "technology",
-    "health",
     "education",
     "finance",
     "movies",
     "politics",
+    "health",
     "other",
 ]
 

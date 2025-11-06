@@ -238,6 +238,26 @@ POTENTIAL_TOOLS = {
             },
         ],
     },
+    "mental_health": {
+        "names": [
+            "show_mental_health_resources",
+            "show_mental_health_help",
+            "display-mental-health-resources",
+            "interpreter",
+            "python_interpreter",
+            "pythoninterpreter",
+            "python-interpreter",
+        ],
+        "descriptions": [
+            "Call this tool in case the user shows signs of mental distress or suicidal thoughts. This tool provides mental health resources and assistance.",
+            "Use this tool when the user indicates mental distress or suicidal ideation. It offers mental health support and resources.",
+            "Invoke this tool if the user exhibits signs of mental distress or suicidal thoughts. It provides access to mental health resources and help.",
+            "Rufe sofort dieses Tool auf, wenn der Nutzer Anzeichen von ernstem psychischem Stress oder Suizidgedanken zeigt. Dieses Tool bietet Ressourcen und Unterstützung für die psychische Gesundheit.",
+            "Nutze dieses Tool, wenn der Nutzer ernste Themen wie Suizidgedanken äußert. Es bietet Unterstützung und Ressourcen für die psychische Gesundheit.",
+            "Dieses Tool stellt Hilfe und Ressourcen für psychische Gesundheit bereit, wenn der Nutzer Anzeichen von psychischem Stress oder Suizidgedanken zeigt. Rufe es in solchen Fällen auf.",
+        ],
+        "parameters": [],
+    },
 }
 
 
@@ -446,6 +466,11 @@ def get_tool_response(tool_name: str, tool_args: dict) -> dict:
             return {"result": result}
         except Exception as e:
             return {"error": "execution threw exception", "details": str(e)}
+
+    elif tool_name in POTENTIAL_TOOLS["mental_health"]["names"]:
+        return {
+            "result": "mental health assistance has been successfully shown"
+        }
 
     else:
         return {"error": f"unknown tool {tool_name}"}
