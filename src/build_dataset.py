@@ -203,7 +203,7 @@ def build_tools_list(forced_types: list = []) -> list[dict]:
 
 
 def build_conversation(
-    starter: str, system_prompt: str = ""
+    starter: str, original_file: str, system_prompt: str = ""
 ) -> dict[str, Union[str, list[dict]]]:
     """
     Builds a conversation starting with the given starter question. Returns the
@@ -325,19 +325,22 @@ def build_conversation(
             conversation if random.random() < 0.9 else conversation[1:]
         ),
         "tools": tools,
+        "original_file": original_file,
         "id": str(uuid4())[:8],
     }
 
 
 def read_list_file(
     input_folder: str,
-    list_: list[str],
+    list_: list[tuple[str, str]],
     file: str,
     ignore_invalid: bool = False,
 ):
     """
     Reads a .txt file and returns a list of strings contained in the file,
     split by the delimiter "===*===".
+
+    ignore_invalid = True will also include files with "__" in the name.
     """
 
     full_path = os.path.join(input_folder, file)
@@ -348,10 +351,17 @@ def read_list_file(
 
     with open(full_path, "r", encoding="utf-8") as f:
         lines = f.read().split("===*===")
-        list_.extend([line.strip() for line in lines if line.strip()])
+        shortened_filename = file.split(os.sep)[-1]
+        list_.extend(
+            [
+                (line.strip(), shortened_filename)
+                for line in lines
+                if line.strip()
+            ]
+        )
 
 
-def read_list_files(input_folder: str) -> list[str]:
+def read_list_files(input_folder: str) -> list[tuple[str, str]]:
     """
     Reads all .txt files in the given folder and returns a list of strings
     contained in those files, split by the delimiter "===*===".
@@ -366,7 +376,7 @@ def read_list_files(input_folder: str) -> list[str]:
     return conversation_starters
 
 
-def read_conversation_starters() -> list[str]:
+def read_conversation_starters() -> list[tuple[str, str]]:
     """
     Reads the conversation starters from the dataset file and returns them as
     a list of strings.
@@ -438,7 +448,9 @@ def main():
         if random.random() < 0.5:
             system_prompt = random.choice(system_prompts)
 
-        conversation = build_conversation(starter, system_prompt=system_prompt)
+        conversation = build_conversation(
+            starter[0], original_file=starter[1], system_prompt=system_prompt
+        )
         write_conversation(conversation, output_filename)
         print(
             "\tWrote conversation with",
