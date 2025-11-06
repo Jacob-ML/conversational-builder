@@ -190,14 +190,14 @@ POTENTIAL_TOOLS = {
             "python-interpreter",
         ],
         "descriptions": [
-            "Ein Tool, um Python-Code auszuführen. Gibt das Ergebnis zurück. Das math-Modul ist verfügbar. Bitte Anweisungen mit ';' trennen. Teuer, nur bei schwierigen Berechnungen nutzen.",
-            "Führt Python-Code aus und gibt das Ergebnis zurück. Das math-Modul ist verfügbar. Tool ist teuer, nur bei schwierigen Berechnungen nutzen. Mehrere Anweisungen mit ';' trennen.",
-            "Tool, um Python-Code zu interpretieren. Gibt das Ergebnis zurück. Das math-Modul ist verfügbar. Mehrere Anweisungen mit ';' trennen. Aufwendig, nur wenn nötig bei schwierigen Berechnungen.",
-            "Interpretiert und führt Python-Code aus, gibt das Ergebnis zurück. Du kannst das Math-Modul verwenden. Trenne mehrere Anweisungen mit ';'. Nur bei sehr schweren oder genauen Berechnungen nutzen, da es teuer ist.",
-            "Executes Python code and returns the result. math module is available. Tool is expensive, use only for difficult calculations. Split several statements with ';'.",
-            "Interprets and runs Python code, returns result. math module is available. Split several statements with ';'. Use only for very hard or precise calculations, as it is expensive.",
-            "Runs Python code snippets and returns the result. Split several statements with ';'. math module is available. Expensive, use only when necessary for complex calculations.",
-            "Tool to execute Python code and get the result. Expensive, only use for hard or precise calculations.",
+            "Ein Tool, um Python-Code auszuführen. Gibt das Ergebnis zurück. Das math-Modul ist verfügbar. Bitte Anweisungen mit ';' trennen. Teuer, nur bei schwierigen Berechnungen nutzen. Imports sind nicht erlaubt.",
+            "Führt Python-Code aus und gibt das Ergebnis zurück. Das math-Modul ist verfügbar. Tool ist teuer, nur bei schwierigen Berechnungen nutzen. Mehrere Anweisungen mit ';' trennen. Keine Imports erlaubt.",
+            "Tool, um Python-Code zu interpretieren. Gibt das Ergebnis zurück. Das math-Modul ist verfügbar. Mehrere Anweisungen mit ';' trennen. Aufwendig, nur wenn nötig bei schwierigen Berechnungen. Wichtig: Keine Imports erlaubt.",
+            "Interpretiert und führt Python-Code aus, gibt das Ergebnis zurück. Du kannst das Math-Modul verwenden. Trenne mehrere Anweisungen mit ';'. Nur bei sehr schweren oder genauen Berechnungen nutzen, da es teuer ist. Es ist nicht erlaubt, Imports zu verwenden.",
+            "Executes Python code and returns the result. math module is available. Tool is expensive, use only for difficult calculations. Split several statements with ';'. Imports are not allowed.",
+            "Interprets and runs Python code, returns result. math module is available. Split several statements with ';'. Use only for very hard or precise calculations, as it is expensive. You are not allowed to use imports.",
+            "Runs Python code snippets and returns the result. Split several statements with ';'. math module is available. Expensive, use only when necessary for complex calculations. Do not use imports.",
+            "Tool to execute Python code and get the result. Expensive, only use for hard or precise calculations. Don't import anything, it's already there.",
         ],
         "parameters": [
             {
@@ -337,7 +337,7 @@ def get_tool_response(tool_name: str, tool_args: dict) -> dict:
 
         try:
             # input("RUN WEB SEARCH? " + query + "\nPress Enter to continue...")
-            time.sleep(20)  # delay to make rate limits less likely to be hit
+            time.sleep(30)  # delay to make rate limits less likely to be hit
             pass
         except (KeyboardInterrupt, EOFError):
             print("Cancelled.")
@@ -370,6 +370,7 @@ def get_tool_response(tool_name: str, tool_args: dict) -> dict:
 
         try:
             # input("RUN WEB FETCH? " + url + "\nPress Enter to continue...")
+            time.sleep(30)  # delay to make rate limits less likely to be hit
             pass
         except (KeyboardInterrupt, EOFError):
             print("Cancelled.")

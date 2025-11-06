@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 import os
 import random
 import json
+import argparse
 from datetime import datetime
 
 from tools import POTENTIAL_TOOLS, get_tool_response
@@ -426,6 +427,18 @@ def main():
     OpenAI API repeatedly.
     """
 
+    parser = argparse.ArgumentParser(
+        description="Build dataset from conversation starters."
+    )
+    parser.add_argument(
+        "--prod-run",
+        action="store_true",
+        help="If set, enables tool usage in the conversations.",
+        default=False,
+    )
+
+    args = parser.parse_args()
+
     starters = read_conversation_starters()
     system_prompts = read_system_prompts()
     os.makedirs(OUTPUT_FOLDER, exist_ok=True)
@@ -448,15 +461,23 @@ def main():
         if random.random() < 0.5:
             system_prompt = random.choice(system_prompts)
 
-        conversation = build_conversation(
-            starter[0], original_file=starter[1], system_prompt=system_prompt
-        )
-        write_conversation(conversation, output_filename)
-        print(
-            "\tWrote conversation with",
-            len(conversation["conversations"]),
-            "messages.",
-        )
+        try:
+            conversation = build_conversation(
+                starter[0],
+                original_file=starter[1],
+                system_prompt=system_prompt,
+            )
+            write_conversation(conversation, output_filename)
+            print(
+                "\tWrote conversation with",
+                len(conversation["conversations"]),
+                "messages.",
+            )
+        except Exception as e:
+            if args.prod_run:
+                print(f"\tError building conversation: {e}")
+            else:
+                raise e
 
     print("Finished.")
 
