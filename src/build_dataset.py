@@ -73,7 +73,7 @@ def query_api(
         try:
             response = client.chat.completions.create(
                 model=(
-                    os.getenv("MODEL_NAME", "google/gemini-2.0-flash-001")
+                    os.getenv("MODEL_NAME", "mistralai/mistral-medium-3.1")
                     if not model
                     else model
                 ),
@@ -256,7 +256,7 @@ def build_conversation(
             tools=[],
             max_tokens=128,
             temperature=0.8,
-            model="google/gemini-2.5-flash",
+            model="mistralai/mistral-medium-3.1",
         )
 
         conversation.append({"role": "user", "content": followup_question})
