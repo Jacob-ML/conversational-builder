@@ -243,10 +243,6 @@ POTENTIAL_TOOLS = {
             "show_mental_health_resources",
             "show_mental_health_help",
             "display-mental-health-resources",
-            "interpreter",
-            "python_interpreter",
-            "pythoninterpreter",
-            "python-interpreter",
         ],
         "descriptions": [
             "Call this tool in case the user shows signs of mental distress or suicidal thoughts. This tool provides mental health resources and assistance.",
