@@ -81,7 +81,7 @@ def categorize_conversation(conversation: dict, client: OpenAI) -> dict:
     while (category not in TOPICS) and (counter < 4):
         counter += 1
         response = client.chat.completions.create(
-            model="mistralai/magistral-small-2506",
+            model="mistralai/mistral-small-3.2-24b-instruct",
             messages=[
                 {"role": "system", "content": PROMPT},
                 {"role": "user", "content": user_message},
