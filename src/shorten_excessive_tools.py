@@ -27,14 +27,14 @@ def read_jsonl(file_path: str) -> list[dict]:
 
 
 def shorten_excessive_tool_responses(
-    data: list[dict], max_tool_response_tokens: int = 16000
+    data: list[dict], max_tool_response_tokens: int = 8192
 ) -> list[dict]:
     """
     Shortens excessively long tool responses in the dataset.
     """
 
     for entry in data:
-        for message in entry.get("conversations", []):
+        for message in entry.get("messages", []):
             if message.get("role") == "tool":
                 response = message.get("content", "")
                 words = response.count(" ") + 1
@@ -98,7 +98,7 @@ def main():
     parser.add_argument(
         "--max-tokens",
         type=int,
-        default=16000,
+        default=8192,
         help="Maximum number of tokens allowed for tool responses.",
     )
 

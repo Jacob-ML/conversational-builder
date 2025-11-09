@@ -6,8 +6,9 @@ categorization task.
 import json
 from os import getenv
 from argparse import ArgumentParser
+import time
 
-from openai import OpenAI
+from openai import OpenAI, RateLimitError
 from dotenv import load_dotenv
 from tqdm import tqdm
 
@@ -37,7 +38,8 @@ TOPICS = [
 ]
 
 PROMPT = """You are an expert query categorizer. You are given a query and \
-shall categorize it. Allowed topics: {topics}. The query will be in German.""".format(
+shall categorize it. Allowed topics: {topics}. The query will be in German. \
+Only pick one query. Return valid JSON.""".format(
     topics=", ".join(TOPICS)
 )
 
@@ -68,7 +70,7 @@ def categorize_conversation(conversation: dict, client: OpenAI) -> dict:
 
     user_message = ""
 
-    for message in conversation["conversations"]:
+    for message in conversation["messages"]:
         if message["role"] == "user":
             user_message = message["content"]
             break
@@ -80,17 +82,34 @@ def categorize_conversation(conversation: dict, client: OpenAI) -> dict:
 
     while (category not in TOPICS) and (counter < 4):
         counter += 1
-        response = client.chat.completions.create(
-            model="mistralai/mistral-small-3.2-24b-instruct",
-            messages=[
-                {"role": "system", "content": PROMPT},
-                {"role": "user", "content": user_message},
-            ],
-            response_format=RESPONSE_FORMAT,  # type: ignore
-            reasoning_effort="low",
-        )
+        while True:
+            try:
+                response = client.chat.completions.create(
+                    model="mistralai/mistral-small-3.2-24b-instruct",
+                    messages=[
+                        {"role": "system", "content": PROMPT},
+                        {"role": "user", "content": user_message},
+                    ],
+                    response_format=RESPONSE_FORMAT,  # type: ignore
+                    reasoning_effort="low",
+                    max_tokens=512,
+                    timeout=3,
+                )
+                time.sleep(0.2)
+
+                break
+            except RateLimitError as e:
+                print(f"Rate limit error: {e}.")
+                time.sleep(10)
 
         if response.choices[0].message.content is None:
+            continue
+
+        if (
+            json.loads(response.choices[0].message.content).get("name")
+            is not None
+        ):
+            category = "casual conversation"
             continue
 
         category = json.loads(response.choices[0].message.content)["category"]
@@ -145,7 +164,16 @@ def main():
     )
     conversations = read_jsonl(args.input_file)
 
+    try:
+        existing_conversations = read_jsonl(args.output_file)
+        existing_ids = {conv["id"] for conv in existing_conversations}
+    except FileNotFoundError:
+        existing_ids = set()
+
     for conversation in tqdm(conversations, desc="Categorizing"):
+        if conversation["id"] in existing_ids:
+            continue
+
         try:
             categorized_conversation = categorize_conversation(
                 conversation, client
